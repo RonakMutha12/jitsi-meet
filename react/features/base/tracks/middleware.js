@@ -160,7 +160,7 @@ function _getLocalTrack(store, mediaType: MEDIA_TYPE) {
 function _setMuted(store, action, mediaType: MEDIA_TYPE) {
     const localTrack = _getLocalTrack(store, mediaType);
 
-    localTrack && setTrackMuted(localTrack.jitsiTrack, action.muted);
+    localTrack && setTrackMuted(store, localTrack.jitsiTrack, action.muted);
 }
 
 /**

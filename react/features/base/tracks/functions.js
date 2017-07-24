@@ -1,7 +1,7 @@
 /* global APP */
 
 import JitsiMeetJS, { JitsiTrackEvents } from '../lib-jitsi-meet';
-import { MEDIA_TYPE } from '../media';
+import { MEDIA_TYPE, setAudioMuted, setVideoMuted } from '../media';
 
 const logger = require('jitsi-meet-logger').getLogger(__filename);
 
@@ -159,15 +159,18 @@ export function getTracksByMediaType(tracks, mediaType) {
 /**
  * Mutes or unmutes a specific <tt>JitsiLocalTrack</tt>. If the muted state of
  * the specified <tt>track</tt> is already in accord with the specified
- * <tt>muted</tt> value, then does nothing.
+ * <tt>muted</tt> value, then does nothing. If the mute/unmute operation fails,
+ * then an appropriate action to rollback the muted state will be dispatched.
  *
+ * @param {Store} store - Redux store that will be used to dispatch "rollback"
+ * action in case operation fails.
  * @param {JitsiLocalTrack} track - The <tt>JitsiLocalTrack</tt> to mute or
  * unmute.
  * @param {boolean} muted - If the specified <tt>track</tt> is to be muted, then
  * <tt>true</tt>; otherwise, <tt>false</tt>.
  * @returns {Promise}
  */
-export function setTrackMuted(track, muted) {
+export function setTrackMuted(store, track, muted) {
     if (track.isMuted() === muted) {
         return Promise.resolve();
     }
@@ -177,6 +180,12 @@ export function setTrackMuted(track, muted) {
     return track[f]()
         .catch(err => {
             console.warn(`Track ${f} was rejected:`, err);
+
+            const muteAction
+                = track.getType() === MEDIA_TYPE.AUDIO
+                    ? setAudioMuted : setVideoMuted;
+
+            store.dispatch(muteAction(!muted));
             throw err;
         });
 }

@@ -70,6 +70,6 @@ function _syncTrackMutedState(store, track) {
     // fired before track gets to state.
     if (track.muted !== muted) {
         track.muted = muted;
-        setTrackMuted(track.jitsiTrack, muted);
+        setTrackMuted(store, track.jitsiTrack, muted);
     }
 }
